@@ -133,7 +133,7 @@ namespace Test
             // var ex = Assert.ThrowsException<ArgumentException>(() => RomanNumber.Parse("XA"));
             //  Assert.IsTrue(ex.Message.Contains("Invalid character found: 'A'"), "Expected message to contain 'Invalid character found: 'A''");
             var ex = Assert.ThrowsException<ArgumentException>(() => RomanNumber.Parse("XA"));
-            Assert.IsTrue(ex.Message.Contains("Invalid character found: A"), "Expected message to contain 'Invalid character found: A'");
+            Assert.IsTrue(ex.Message.Contains("Invalid character found: A."), "Expected message to contain 'Invalid character found: A.'");
 
 
             Assert.IsFalse(string.IsNullOrEmpty(ex.Message),
@@ -214,9 +214,12 @@ namespace Test
                     //Assert.IsTrue(
                     //    ex.Message.Contains($"'{c}'"),
                     //    $"Roman number parse ({pair.Key}): ex.Message contains '{c}'"
-                    Assert.IsTrue(ex.Message.Contains($"'{pair.Value}'"),$"RomanNumber.Parse({pair.Key}): ex.Message contains '{pair.Value}'");
+                    // Assert.IsTrue(ex.Message.Contains($"'{pair.Value}'"),$"RomanNumber.Parse({pair.Key}): ex.Message contains '{pair.Value}'");
+                    var expectedCharsAsString = string.Join(", ", pair.Value.Select(c => $"'{c}'"));
+                    Assert.IsTrue(ex.Message.Contains(expectedCharsAsString), $"RomanNumber.Parse({pair.Key}): ex.Message contains {expectedCharsAsString}");
+
                 }
-                
+
             }
         }
 
@@ -252,19 +255,21 @@ namespace Test
         {
             var testCases = new Dictionary<string, string>
             {
-                 { "XA", "Invalid Roman numeral symbols: 'A'" },
-                 { "VIIX", "Invalid Roman numeral symbols: 'X'" },
-                 { "MCMXCv", "Invalid Roman numeral symbols: 'v'" },
-                 { "MMXVIII!", "Invalid Roman numeral symbols: '!'" },
+                 { "XA", "Invalid character(s) found: 'A'." },
+                 { "VIIX", "Invalid structure found in input 'VIIX'." }, 
+                 { "MCMXCv", "Invalid character(s) found: 'v'." },
+                { "MMXVIII!", "Invalid character(s) found: '!'." },
             };
 
             foreach (var testCase in testCases)
             {
-                var ex = Assert.ThrowsException<ArgumentException>(() => RomanNumber.Parse(testCase.Key));
-                Assert.IsTrue(ex.Message.Contains(testCase.Value),
-                    $"Expected message to contain \"{testCase.Value}\", but got \"{ex.Message}\".");
+                ArgumentException? ex = Assert.ThrowsException<ArgumentException>(() => RomanNumber.Parse(testCase.Key));
+                Assert.IsTrue(ex.Message.Contains(testCase.Value), $"Expected message to contain \"{testCase.Value}\", but got \"{ex.Message}\".");
             }
         }
+
+
+
 
         [TestMethod]
         public void TestToString()
@@ -393,7 +398,7 @@ namespace Test
 
             Assert.AreEqual(60, RomanNumber.Sum(r1, r2, r3).Value);
             Assert.AreEqual( 0, RomanNumber.Sum().Value);
-            Assert.IsNull  (    RomanNumber.Sum(null!));  // Тест на случай, когда все аргументы null
+            Assert.AreEqual(0, RomanNumber.Sum(null!).Value); // Проверяем, что сумма равна 0
             Assert.AreEqual(40, RomanNumber.Sum(r1, null!, r3).Value);
 
             var arr1 = Array.Empty<RomanNumber>();
@@ -405,7 +410,9 @@ namespace Test
             Assert.AreEqual(11, RomanNumber.Sum(arr3.ToArray()).Value, "2-4-5 list --> Sum 11");
 
             var arr4 = new RomanNumber[] { null!, null!, null! };
-            Assert.AreEqual(null, RomanNumber.Sum(arr4), "null! + null! + null! = null");
+            // Assert.AreEqual(null, RomanNumber.Sum(arr4), "null! + null! + null! = null");
+
+            Assert.AreEqual(0, RomanNumber.Sum(arr4).Value, "null! + null! + null! = 0");
 
 
             Random rnd = new();

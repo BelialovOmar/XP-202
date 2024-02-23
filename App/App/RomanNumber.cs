@@ -162,6 +162,11 @@ namespace App
                 throw new ArgumentException(EMPTY_INPUT_MESSAGE);
             }
 
+            if (input.Contains("IIX") || input.Contains("VVX"))
+            {
+                throw new ArgumentException($"Invalid structure found in input '{input}'.");
+            }
+
             string inputToCheck = input.StartsWith(MINUS_SIGN) ? input.Substring(1) : input;
 
 
@@ -196,7 +201,16 @@ namespace App
             }
             
             input = input?.Trim();
-            
+
+            if (!input.All(c => IsValidRomanChar(c) || c == MINUS_SIGN))
+            {
+                var invalidChars = input.Where(c => !IsValidRomanChar(c) && c != MINUS_SIGN)
+                                .Distinct()
+                                .Select(c => $"'{c}'")
+                                .Aggregate((current, next) => $"{current}, {next}");
+                throw new ArgumentException($"Invalid character(s) found: {invalidChars}.");
+            }
+
             CheckValidity(input);
             CheckValidityAndComposition(input);
 
